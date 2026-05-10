@@ -1,34 +1,43 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"slices"
+)
 
 func main() {
 	id := 1
 	var tasks []Task
 	var input string
 	message := "Would you like to add, list, or delete a task?"
-	fmt.Println(message)
+loop:
 	for {
+		fmt.Println(message)
 		fmt.Scanln(&input)
-		if input == "yes" {
+		switch input {
+		case "add":
+			fmt.Print("Name of the task: ")
 			fmt.Scanln(&input)
 			tasks = append(tasks, Task{
 				ID:    id,
 				Title: input,
 				Done:  false,
 			})
-			fmt.Println(message)
 			id++
-		}
-		if input == "no" {
-			fmt.Println(message)
-		}
-		if input == "list" {
+		case "list":
 			fmt.Println("Tasks: ", tasks)
-		}
-
-		if input == "quit" || input == "exit" {
-			break
+		case "delete":
+			fmt.Print("Name of the task to be detele: ")
+			fmt.Scanln(&input)
+			for i, task := range tasks {
+				if task.Title == input {
+					tasks = slices.Delete(tasks, i, i+1)
+				}
+			}
+		case "quit", "exit":
+			break loop
+		default:
+			fmt.Println("Unknown error")
 		}
 	}
 }
