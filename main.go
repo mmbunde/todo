@@ -1,36 +1,40 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
+	"os"
 	"slices"
+	"strings"
 )
 
 func main() {
 	id := 1
 	var tasks []Task
-	var input string
+	var taskTitle string
+	reader := bufio.NewReader(os.Stdin)
 	message := "Would you like to add, list, or delete a task?"
 loop:
 	for {
 		fmt.Println(message)
-		fmt.Scanln(&input)
-		switch input {
+		taskTitle, _ = reader.ReadString('\n')
+		switch strings.TrimSpace(taskTitle) {
 		case "add":
 			fmt.Print("Name of the task: ")
-			fmt.Scanln(&input)
+			taskTitle, _ = reader.ReadString('\n')
 			tasks = append(tasks, Task{
 				ID:    id,
-				Title: input,
+				Title: strings.TrimSpace(taskTitle),
 				Done:  false,
 			})
 			id++
 		case "list":
 			fmt.Println("Tasks: ", tasks)
 		case "delete":
-			fmt.Print("Name of the task to be detele: ")
-			fmt.Scanln(&input)
+			fmt.Print("Name of the task to delete: ")
+			taskTitle, _ = reader.ReadString('\n')
 			for i, task := range tasks {
-				if task.Title == input {
+				if task.Title == strings.TrimSpace(taskTitle) {
 					tasks = slices.Delete(tasks, i, i+1)
 				}
 			}
