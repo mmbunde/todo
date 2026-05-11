@@ -14,7 +14,7 @@ func main() {
 	id := 1
 	var tasks []Task
 	var taskTitle string
-	message := "Would you like to add, list, or delete a task?"
+	message := "Would you like to add, list, delete, or quit a task?"
 loop:
 	for {
 		action := readInput(message)
@@ -24,11 +24,18 @@ loop:
 			tasks = append(tasks, Task{
 				ID:    id,
 				Title: taskTitle,
-				Done:  false,
+				Done:  true,
 			})
 			id++
 		case "list":
-			fmt.Println("Tasks: ", tasks)
+			fmt.Printf("%-5s %-20s %s\n", "ID", "Title", "Done")
+			for _, task := range tasks {
+				check := "\u274c" //This is a red x
+				if task.Done == true {
+					check = "\u2705" //This is a green checkmark
+				}
+				fmt.Printf("%-5d %-20s %s\n", task.ID, task.Title, check)
+			}
 		case "delete":
 			taskTitle = readInput("Name of the task to delete: ")
 			for i, task := range tasks {
