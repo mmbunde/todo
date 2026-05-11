@@ -21,12 +21,17 @@ loop:
 		switch action {
 		case "add":
 			taskTitle = readInput("Name of the task: ")
-			tasks = append(tasks, Task{
-				ID:    id,
-				Title: taskTitle,
-				Done:  false,
-			})
-			id++
+			index := findTaskByTitle(tasks, taskTitle)
+			if index == -1 || tasks[index].Done == true {
+				tasks = append(tasks, Task{
+					ID:    id,
+					Title: taskTitle,
+					Done:  false,
+				})
+				id++
+			} else {
+				fmt.Println("Task already exists and isn't complete")
+			}
 		case "list":
 			if len(tasks) == 0 {
 				fmt.Println("No tasks are being tracked")
@@ -73,7 +78,7 @@ func readInput(prompt string) string {
 
 func findTaskByTitle(taskList []Task, taskTitle string) int {
 	for i, task := range taskList {
-		if task.Title == taskTitle {
+		if strings.EqualFold(task.Title, taskTitle) {
 			return i
 		}
 	}
