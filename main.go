@@ -42,18 +42,19 @@ loop:
 			}
 		case "complete":
 			taskTitle = readInput("Name of task completed: ")
-			for i, task := range tasks {
-				if task.Title == taskTitle {
-					tasks[i].Done = true
-				}
+			index := findTaskByTitle(tasks, taskTitle)
+			if index != -1 {
+				tasks[index].Done = true
+			} else {
+				fmt.Println("Task not found!")
 			}
-
 		case "delete":
 			taskTitle = readInput("Name of the task to delete: ")
-			for i, task := range tasks {
-				if task.Title == taskTitle {
-					tasks = slices.Delete(tasks, i, i+1)
-				}
+			index := findTaskByTitle(tasks, taskTitle)
+			if index != -1 {
+				tasks = slices.Delete(tasks, index, index+1)
+			} else {
+				fmt.Println("Task not found!")
 			}
 		case "quit", "exit":
 			break loop
@@ -68,4 +69,13 @@ func readInput(prompt string) string {
 	fmt.Println(prompt)
 	userInput, _ := reader.ReadString('\n')
 	return strings.TrimSpace(userInput)
+}
+
+func findTaskByTitle(taskList []Task, taskTitle string) int {
+	for i, task := range taskList {
+		if task.Title == taskTitle {
+			return i
+		}
+	}
+	return -1
 }
