@@ -14,6 +14,8 @@ func main() {
 	var taskTitle string
 	var err error
 	message := "Would you like to add, list, delete, or complete a task or quit?"
+	filePath := readInput("JSON filepath for tasks: (If none write the desired name)")
+	tasks = loadTasks(filePath)
 loop:
 	for {
 		action := readInput(message)
@@ -41,4 +43,5 @@ loop:
 			fmt.Println("Please select add, list, delete, or quit")
 		}
 	}
+	saveTasks(filePath, tasks)
 }

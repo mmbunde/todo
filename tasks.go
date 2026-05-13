@@ -1,15 +1,48 @@
 package main
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
+	"os"
 	"slices"
 )
 
 type Task struct {
-	ID    int
-	Title string
-	Done  bool
+	ID    int    `json:"id"`
+	Title string `json:"title"`
+	Done  bool   `json:"done"`
+}
+
+func loadTasks(filePath string) []Task {
+	var taskList []Task
+	taskData, err := os.ReadFile(filePath)
+	if os.IsNotExist(err) {
+		fmt.Println("File will be created when you quit")
+		return taskList
+	} else if err != nil {
+		fmt.Println("Unexpected error, quitting")
+		os.Exit(1)
+	}
+	err = json.Unmarshal(taskData, &taskList)
+	if err != nil {
+		fmt.Println("Error parsing JSON, quitting")
+		os.Exit(1)
+	}
+	return taskList
+}
+
+func saveTasks(filePath string, taskList []Task) {
+	taskData, err := json.Marshal(taskList)
+	if err != nil {
+		fmt.Println("Error encoding file to JSON, quitting")
+		os.Exit(1)
+	}
+	err = os.WriteFile(filePath, taskData, 0644)
+	if err != nil {
+		fmt.Println("Error writing to file, quitting")
+		os.Exit(1)
+	}
 }
 
 func addTask(taskList []Task, taskTitle string, id int) ([]Task, int) {
