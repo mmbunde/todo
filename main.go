@@ -9,13 +9,13 @@ import (
 var reader = bufio.NewReader(os.Stdin)
 
 func main() {
-	id := 1
+	var id int
 	var tasks []Task
 	var taskTitle string
 	var err error
 	message := "Would you like to add, list, delete, or complete a task or quit?"
 	filePath := readInput("JSON filepath for tasks: (If none write the desired name)")
-	tasks = loadTasks(filePath)
+	tasks, id = loadTasks(filePath)
 loop:
 	for {
 		action := readInput(message)

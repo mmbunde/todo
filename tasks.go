@@ -14,12 +14,12 @@ type Task struct {
 	Done  bool   `json:"done"`
 }
 
-func loadTasks(filePath string) []Task {
+func loadTasks(filePath string) ([]Task, int) {
 	var taskList []Task
 	taskData, err := os.ReadFile(filePath)
 	if os.IsNotExist(err) {
 		fmt.Println("File will be created when you quit")
-		return taskList
+		return taskList, 1
 	} else if err != nil {
 		fmt.Println("Unexpected error, quitting")
 		os.Exit(1)
@@ -29,7 +29,10 @@ func loadTasks(filePath string) []Task {
 		fmt.Println("Error parsing JSON, quitting")
 		os.Exit(1)
 	}
-	return taskList
+	if len(taskList) == 0 {
+		return taskList, 1
+	}
+	return taskList, taskList[len(taskList)-1].ID + 1
 }
 
 func saveTasks(filePath string, taskList []Task) {
