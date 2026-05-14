@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"slices"
+	"strings"
 )
 
 type Task struct {
@@ -93,4 +94,13 @@ func listTasks(taskList []Task) {
 			fmt.Printf("%-5d %-20s %s\n", task.ID, task.Title, check)
 		}
 	}
+}
+
+func findTaskByTitle(taskList []Task, taskTitle string) int {
+	for i, task := range taskList {
+		if strings.EqualFold(task.Title, taskTitle) {
+			return i
+		}
+	}
+	return -1
 }

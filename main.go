@@ -1,47 +1,65 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
 	"os"
+	"path/filepath"
+	"strings"
 )
 
-var reader = bufio.NewReader(os.Stdin)
+var usage = "Usage:\n" +
+	"todo [JSON filepath] list\n" +
+	"todo [JSON filepath] add|delete|complete [Task Title]\n"
 
 func main() {
-	var id int
-	var tasks []Task
-	var taskTitle string
 	var err error
-	message := "Would you like to add, list, delete, or complete a task or quit?"
-	filePath := readInput("JSON filepath for tasks: (If none write the desired name)")
-	tasks, id = loadTasks(filePath)
-loop:
-	for {
-		action := readInput(message)
-		switch action {
-		case "add":
-			taskTitle = readInput("Name of the task: ")
-			tasks, id = addTask(tasks, taskTitle, id)
-		case "list":
-			listTasks(tasks)
-		case "complete":
-			taskTitle = readInput("Name of task completed: ")
-			tasks, err = completeTask(tasks, taskTitle)
-			if err != nil {
-				fmt.Println(err)
-			}
-		case "delete":
-			taskTitle = readInput("Name of the task to delete: ")
-			tasks, err = deleteTask(tasks, taskTitle)
-			if err != nil {
-				fmt.Println(err)
-			}
-		case "quit", "exit":
-			break loop
-		default:
-			fmt.Println("Please select add, list, delete, or quit")
+
+	filePath, action, taskTitle := validateArgs()
+	tasks, id := loadTasks(filePath)
+	switch action {
+	case "add":
+		tasks, id = addTask(tasks, taskTitle, id)
+	case "list":
+		listTasks(tasks)
+	case "complete":
+		tasks, err = completeTask(tasks, taskTitle)
+		if err != nil {
+			fmt.Println(err)
 		}
+	case "delete":
+		tasks, err = deleteTask(tasks, taskTitle)
+		if err != nil {
+			fmt.Println(err)
+		}
+	default:
+		fmt.Println(usage)
 	}
 	saveTasks(filePath, tasks)
+}
+
+func validateArgs() (string, string, string) {
+	if len(os.Args) < 3 {
+		fmt.Println(usage)
+		os.Exit(1)
+	}
+	filePath := os.Args[1]
+	action := os.Args[2]
+	if !strings.EqualFold(filepath.Ext(filePath), ".json") {
+		fmt.Println(usage)
+		os.Exit(1)
+	} else if len(os.Args) == 3 && os.Args[2] != "list" {
+		fmt.Println(usage)
+		os.Exit(1)
+	} else if len(os.Args) == 4 && os.Args[2] != "add" && os.Args[2] != "delete" && os.Args[2] != "complete" {
+		fmt.Println(usage)
+		os.Exit(1)
+	} else if len(os.Args) > 4 {
+		fmt.Println(usage)
+		os.Exit(1)
+	}
+	if len(os.Args) == 4 {
+		taskTitle := os.Args[3]
+		return filePath, action, taskTitle
+	}
+	return filePath, action, ""
 }
