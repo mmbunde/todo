@@ -14,7 +14,13 @@ var usage = "Usage:\n" +
 func main() {
 	var err error
 
-	filePath, action, taskTitle := validateArgs()
+	fileName, action, taskTitle := validateArgs()
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+	filePath := filepath.Join(homeDir, ".config", "todo", fileName)
 	tasks, id := loadTasks(filePath)
 	switch action {
 	case "add":
@@ -42,9 +48,9 @@ func validateArgs() (string, string, string) {
 		fmt.Println(usage)
 		os.Exit(1)
 	}
-	filePath := os.Args[1]
+	fileName := os.Args[1]
 	action := os.Args[2]
-	if !strings.EqualFold(filepath.Ext(filePath), ".json") {
+	if !strings.EqualFold(filepath.Ext(fileName), ".json") {
 		fmt.Println(usage)
 		os.Exit(1)
 	} else if len(os.Args) == 3 && os.Args[2] != "list" {
@@ -59,7 +65,7 @@ func validateArgs() (string, string, string) {
 	}
 	if len(os.Args) == 4 {
 		taskTitle := os.Args[3]
-		return filePath, action, taskTitle
+		return fileName, action, taskTitle
 	}
-	return filePath, action, ""
+	return fileName, action, ""
 }
