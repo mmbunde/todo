@@ -11,12 +11,20 @@ import (
 
 // deleteCmd represents the delete command
 var deleteCmd = &cobra.Command{
-	Use:   "delete",
+	Use:   "delete [Name of the task]",
 	Short: "Delete a task",
 
 	Run: func(cmd *cobra.Command, args []string) {
 		var err error
-		tasks, _ := storage.LoadTasks(taskFile)
+		tasks, _, err := storage.LoadTasks(taskFile)
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+		if len(args) == 0 {
+			cmd.Help()
+			os.Exit(1)
+		}
 		tasks, err = models.DeleteTask(tasks, args[0])
 		if err != nil {
 			fmt.Println(err)

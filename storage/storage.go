@@ -9,7 +9,7 @@ import (
 	"github.com/mmbunde/todo/models"
 )
 
-func setFilePath(fileName string) string {
+func SetFilePath(fileName string) string {
 	homeDir, err := os.UserHomeDir()
 	if err != nil {
 		fmt.Println(err)
@@ -19,13 +19,12 @@ func setFilePath(fileName string) string {
 	return filePath
 }
 
-func LoadTasks(fileName string) ([]models.Task, int) {
+func LoadTasks(fileName string) ([]models.Task, int, error) {
 	var taskList []models.Task
-	filePath := setFilePath(fileName)
+	filePath := SetFilePath(fileName)
 	taskData, err := os.ReadFile(filePath)
 	if os.IsNotExist(err) {
-		fmt.Println("File will be created when you quit")
-		return taskList, 1
+		return taskList, 1, err
 	} else if err != nil {
 		fmt.Println("Unexpected error, quitting")
 		os.Exit(1)
@@ -36,13 +35,13 @@ func LoadTasks(fileName string) ([]models.Task, int) {
 		os.Exit(1)
 	}
 	if len(taskList) == 0 {
-		return taskList, 1
+		return taskList, 1, nil
 	}
-	return taskList, taskList[len(taskList)-1].ID + 1
+	return taskList, taskList[len(taskList)-1].ID + 1, nil
 }
 
 func SaveTasks(fileName string, taskList []models.Task) {
-	filePath := setFilePath(fileName)
+	filePath := SetFilePath(fileName)
 	taskData, err := json.Marshal(taskList)
 	if err != nil {
 		fmt.Println("Error encoding file to JSON, quitting")
