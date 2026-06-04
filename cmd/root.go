@@ -1,12 +1,18 @@
+/*
+Copyright © 2026 NAME HERE <EMAIL ADDRESS>
+*/
 package cmd
 
 import (
+	"database/sql"
 	"os"
 
+	"github.com/mmbunde/todo/storage"
 	"github.com/spf13/cobra"
 )
 
 var taskFile string
+var db *sql.DB
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
@@ -32,6 +38,11 @@ todo -f tasks.json add "Learn Go"`,
 			cmd.Help()
 			os.Exit(1)
 		}
+		var err error
+		db, err = storage.InitDB(taskFile)
+		if err != nil {
+			os.Exit(1)
+		}
 	},
 }
 
@@ -45,7 +56,7 @@ func Execute() {
 }
 
 func init() {
-	rootCmd.PersistentFlags().StringVarP(&taskFile, "file", "f", "", "JSON file to store tasks")
+	rootCmd.PersistentFlags().StringVarP(&taskFile, "file", "f", "", "SQLite DB to store tasks")
 	rootCmd.RegisterFlagCompletionFunc("file",
 		func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 			return []string{"json"}, cobra.ShellCompDirectiveFilterFileExt
