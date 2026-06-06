@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"database/sql"
+	"errors"
 	"fmt"
 	"os"
 
@@ -14,10 +16,20 @@ var completeCmd = &cobra.Command{
 
 	Run: func(cmd *cobra.Command, args []string) {
 		checkArgs(cmd, args)
-		// if len(args) == 0 {
-		// 	cmd.Help()
-		// 	os.Exit(1)
-		// }
+		var complete int
+		err := db.QueryRow("SELECT complete FROM tasks WHERE task_title = (?)", args[0]).Scan(&complete)
+		if errors.Is(err, sql.ErrNoRows) {
+			fmt.Println("Task doesn't exist")
+			os.Exit(1)
+		}
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+		if complete == 1 {
+			fmt.Println("Task is already complete")
+			os.Exit(1)
+		}
 		taskResults, err := db.Exec("UPDATE tasks SET complete = 1 WHERE task_title = (?)", args[0])
 		if err != nil {
 			fmt.Println(err)
