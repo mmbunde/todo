@@ -17,11 +17,11 @@ var listCmd = &cobra.Command{
 		var taskTitle string
 		var complete int
 		rows, err := db.Query("SELECT * FROM tasks")
-		defer rows.Close()
 		if err != nil {
 			fmt.Println(err)
 			os.Exit(1)
 		}
+		defer rows.Close()
 		found := false
 		for rows.Next() {
 			if !found {
