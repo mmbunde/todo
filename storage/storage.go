@@ -1,12 +1,12 @@
 package storage
 
 import (
-	"encoding/json"
+	"database/sql"
 	"fmt"
 	"os"
 	"path/filepath"
 
-	"github.com/mmbunde/todo/models"
+	_ "modernc.org/sqlite"
 )
 
 func SetFilePath(fileName string) string {
@@ -19,37 +19,20 @@ func SetFilePath(fileName string) string {
 	return filePath
 }
 
-func LoadTasks(fileName string) ([]models.Task, int, error) {
-	var taskList []models.Task
+func InitDB(fileName string) (*sql.DB, error) {
 	filePath := SetFilePath(fileName)
-	taskData, err := os.ReadFile(filePath)
-	if os.IsNotExist(err) {
-		return taskList, 1, err
-	} else if err != nil {
-		fmt.Println("Unexpected error, quitting")
-		os.Exit(1)
-	}
-	err = json.Unmarshal(taskData, &taskList)
+	taskDB, err := sql.Open("sqlite", filePath)
 	if err != nil {
-		fmt.Println("Error parsing JSON, quitting")
+		return taskDB, err
+	}
+	_, err = taskDB.Exec(`CREATE TABLE IF NOT EXISTS tasks (
+	id INTEGER PRIMARY KEY AUTOINCREMENT,
+	task_title TEXT UNIQUE,
+	complete INTEGER DEFAULT 0)`)
+	if err != nil {
+		fmt.Println(err)
 		os.Exit(1)
 	}
-	if len(taskList) == 0 {
-		return taskList, 1, nil
-	}
-	return taskList, taskList[len(taskList)-1].ID + 1, nil
-}
 
-func SaveTasks(fileName string, taskList []models.Task) {
-	filePath := SetFilePath(fileName)
-	taskData, err := json.Marshal(taskList)
-	if err != nil {
-		fmt.Println("Error encoding file to JSON, quitting")
-		os.Exit(1)
-	}
-	err = os.WriteFile(filePath, taskData, 0644)
-	if err != nil {
-		fmt.Println("Error writing to file, quitting")
-		os.Exit(1)
-	}
+	return taskDB, nil
 }

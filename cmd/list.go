@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/mmbunde/todo/models"
-	"github.com/mmbunde/todo/storage"
 	"github.com/spf13/cobra"
 )
 
@@ -15,12 +13,32 @@ var listCmd = &cobra.Command{
 	Short: "Lists all current tasks and their completion status.",
 
 	Run: func(cmd *cobra.Command, args []string) {
-		tasks, _, err := storage.LoadTasks(taskFile)
+		var id int
+		var taskTitle string
+		var complete int
+		rows, err := db.Query("SELECT * FROM tasks")
 		if err != nil {
 			fmt.Println(err)
 			os.Exit(1)
 		}
-		models.ListTasks(tasks)
+		defer rows.Close()
+		found := false
+		for rows.Next() {
+			if !found {
+				fmt.Printf("%-5s %-20s %s\n", "ID", "Title", "Done")
+				found = true
+			}
+			rows.Scan(&id, &taskTitle, &complete)
+			check := "\u274c"
+			if complete == 1 {
+				check = "\u2705"
+			}
+			fmt.Printf("%-5d %-20s %s\n", id, taskTitle, check)
+		}
+		if !found {
+			fmt.Println("No tasks being tracked")
+		}
+
 	},
 }
 
