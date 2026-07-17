@@ -20,7 +20,7 @@ func AddTask(taskDB *sql.DB, taskTitle string) error {
 		}
 		return err
 	}
-	return err
+	return nil
 }
 
 func ListTask(taskDB *sql.DB) ([]Task, error) {
@@ -92,4 +92,17 @@ func checkRowsAffected(taskResults sql.Result) (bool, error) {
 		return false, nil
 	}
 	return true, nil
+}
+
+func GetTaskID(taskDB *sql.DB, taskTitle string) (int, error) {
+	var taskID int
+	err := taskDB.QueryRow("SELECT id FROM tasks WHERE task_title = (?)", taskTitle).Scan(&taskID)
+	if errors.Is(err, sql.ErrNoRows) {
+		err = errors.New("Task doesn't exist")
+		return taskID, err
+	}
+	if err != nil {
+		return taskID, err
+	}
+	return taskID, nil
 }
