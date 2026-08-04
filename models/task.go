@@ -6,6 +6,13 @@ import (
 	"strings"
 )
 
+var (
+	ErrTaskExist        = errors.New("task already exists")
+	ErrTaskNotFound     = errors.New("task doesn't exist")
+	ErrTaskComplete     = errors.New("task is already complete")
+	ErrTaskUpdateFailed = errors.New("task could not be updated")
+)
+
 type Task struct {
 	ID        int
 	TaskTitle string
@@ -16,7 +23,7 @@ func AddTask(taskDB *sql.DB, taskTitle string) error {
 	_, err := taskDB.Exec("INSERT INTO tasks (task_title) VALUES (?)", taskTitle)
 	if err != nil {
 		if strings.Contains(err.Error(), "UNIQUE constraint failed") {
-			return errors.New("Task already exists")
+			return ErrTaskExist
 		}
 		return err
 	}
@@ -42,15 +49,14 @@ func CompleteTask(taskDB *sql.DB, args string) error {
 	var complete int
 	err := taskDB.QueryRow("SELECT complete FROM tasks WHERE task_title = (?)", args).Scan(&complete)
 	if errors.Is(err, sql.ErrNoRows) {
-		err = errors.New("Task doesn't exist")
-		return err
+		return ErrTaskNotFound
 	}
 	if err != nil {
 		return err
 	}
 	if complete == 1 {
 		err = errors.New("Task is already complete")
-		return err
+		return ErrTaskComplete
 	}
 	taskResults, err := taskDB.Exec("UPDATE tasks SET complete = 1 WHERE task_title = (?)", args)
 	if err != nil {
@@ -61,8 +67,7 @@ func CompleteTask(taskDB *sql.DB, args string) error {
 		return err
 	}
 	if !check {
-		err = errors.New("No task found to complete")
-		return err
+		return ErrTaskUpdateFailed
 	}
 	return nil
 }
@@ -77,8 +82,7 @@ func DeleteTask(taskDB *sql.DB, args string) error {
 		return err
 	}
 	if !check {
-		err = errors.New("No task found to delete")
-		return err
+		return ErrTaskNotFound
 	}
 	return nil
 }
@@ -98,8 +102,7 @@ func GetTaskID(taskDB *sql.DB, taskTitle string) (int, error) {
 	var taskID int
 	err := taskDB.QueryRow("SELECT id FROM tasks WHERE task_title = (?)", taskTitle).Scan(&taskID)
 	if errors.Is(err, sql.ErrNoRows) {
-		err = errors.New("Task doesn't exist")
-		return taskID, err
+		return taskID, ErrTaskNotFound
 	}
 	if err != nil {
 		return taskID, err
