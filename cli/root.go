@@ -1,10 +1,8 @@
-/*
-Copyright © 2026 NAME HERE <EMAIL ADDRESS>
-*/
-package cmd
+package cli
 
 import (
 	"database/sql"
+	"fmt"
 	"os"
 
 	"github.com/mmbunde/todo/storage"
@@ -27,7 +25,7 @@ todo -f <file> complete <task title>
 todo -f <file> delete <task title>
 
 Example:
-todo -f tasks.json add "Learn Go"`,
+todo -f tasks.db add "Learn Go"`,
 
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
 		switch cmd.Name() {
@@ -41,7 +39,17 @@ todo -f tasks.json add "Learn Go"`,
 		var err error
 		db, err = storage.InitDB(taskFile)
 		if err != nil {
+			fmt.Println(err)
 			os.Exit(1)
+		}
+	},
+	PersistentPostRun: func(cmd *cobra.Command, args []string) {
+		if db != nil {
+			err := db.Close()
+			if err != nil {
+				fmt.Println(err)
+				os.Exit(1)
+			}
 		}
 	},
 }
@@ -51,6 +59,7 @@ todo -f tasks.json add "Learn Go"`,
 func Execute() {
 	err := rootCmd.Execute()
 	if err != nil {
+		fmt.Println(err)
 		os.Exit(1)
 	}
 }
@@ -59,6 +68,6 @@ func init() {
 	rootCmd.PersistentFlags().StringVarP(&taskFile, "file", "f", "", "SQLite DB to store tasks")
 	rootCmd.RegisterFlagCompletionFunc("file",
 		func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-			return []string{"json"}, cobra.ShellCompDirectiveFilterFileExt
+			return []string{"db"}, cobra.ShellCompDirectiveFilterFileExt
 		})
 }

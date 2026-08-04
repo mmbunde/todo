@@ -1,9 +1,10 @@
-package cmd
+package cli
 
 import (
 	"fmt"
 	"os"
 
+	"github.com/mmbunde/todo/models"
 	"github.com/spf13/cobra"
 )
 
@@ -14,22 +15,9 @@ var deleteCmd = &cobra.Command{
 
 	Run: func(cmd *cobra.Command, args []string) {
 		checkArgs(cmd, args)
-		// if len(args) == 0 {
-		// 	cmd.Help()
-		// 	os.Exit(1)
-		// }
-		taskResults, err := db.Exec("DELETE FROM tasks WHERE task_title = (?)", args[0])
+		err := models.DeleteTask(db, args[0])
 		if err != nil {
 			fmt.Println(err)
-			os.Exit(1)
-		}
-		check, err := checkRowsAffected(taskResults)
-		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
-		}
-		if !check {
-			fmt.Println("No task found to delete")
 			os.Exit(1)
 		}
 	},

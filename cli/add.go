@@ -1,10 +1,10 @@
-package cmd
+package cli
 
 import (
 	"fmt"
 	"os"
-	"strings"
 
+	"github.com/mmbunde/todo/models"
 	"github.com/spf13/cobra"
 )
 
@@ -15,17 +15,9 @@ var addCmd = &cobra.Command{
 
 	Run: func(cmd *cobra.Command, args []string) {
 		checkArgs(cmd, args)
-		// if len(args) == 0 {
-		// 	cmd.Help()
-		// 	os.Exit(1)
-		// }
-		_, err := db.Exec("INSERT INTO tasks (task_title) VALUES (?)", args[0])
+		err := models.AddTask(db, args[0])
 		if err != nil {
-			if strings.Contains(err.Error(), "UNIQUE constraint failed") {
-				fmt.Println("Task already exists")
-			} else {
-				fmt.Println(err)
-			}
+			fmt.Println(err)
 			os.Exit(1)
 		}
 	},
